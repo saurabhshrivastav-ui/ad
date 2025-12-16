@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Container } from '../components/Container';
 import { Header } from '../components/Header';
 import { StorageService } from '../services/storage';
@@ -24,61 +25,168 @@ export const History: React.FC<HistoryProps> = ({ onBack }) => {
   }, []);
 
   return (
-    <Container className="bg-gray-50">
+    <Container style={styles.container}>
       <Header title="History" onBack={onBack} />
       
-      <div className="p-4">
-        <div className="flex p-1 bg-gray-200 rounded-xl mb-6">
-            <button 
-                onClick={() => setActiveTab('recipes')}
-                className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${activeTab === 'recipes' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500'}`}
+      <View style={styles.content}>
+        <View style={styles.tabContainer}>
+            <TouchableOpacity 
+                onPress={() => setActiveTab('recipes')}
+                style={[styles.tabButton, activeTab === 'recipes' && styles.activeTab]}
             >
-                Saved Plans
-            </button>
-            <button 
-                onClick={() => setActiveTab('checks')}
-                className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${activeTab === 'checks' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500'}`}
+                <Text style={[styles.tabText, activeTab === 'recipes' && styles.activeTabText]}>
+                    Saved Plans
+                </Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+                onPress={() => setActiveTab('checks')}
+                style={[styles.tabButton, activeTab === 'checks' && styles.activeTab]}
             >
-                Safety Checks
-            </button>
-        </div>
+                <Text style={[styles.tabText, activeTab === 'checks' && styles.activeTabText]}>
+                    Safety Checks
+                </Text>
+            </TouchableOpacity>
+        </View>
 
-        <div className="space-y-4">
+        <View style={styles.list}>
             {activeTab === 'recipes' ? (
                 recipes.length === 0 ? (
-                    <div className="text-center py-10 text-gray-400">No saved meal plans yet.</div>
+                    <Text style={styles.emptyText}>No saved meal plans yet.</Text>
                 ) : (
                     recipes.map(r => (
-                        <div key={r.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                            <h3 className="font-bold text-gray-800">{r.title}</h3>
-                            <p className="text-xs text-gray-500 mt-1 line-clamp-2">{r.description}</p>
-                            <div className="mt-2 flex gap-2">
+                        <View key={r.id} style={styles.recipeCard}>
+                            <Text style={styles.recipeTitle}>{r.title}</Text>
+                            <Text style={styles.recipeDesc}>{r.description}</Text>
+                            <View style={styles.tags}>
                                 {r.tags.slice(0, 2).map(t => (
-                                    <span key={t} className="text-[10px] bg-teal-50 text-teal-600 px-2 py-0.5 rounded-full">{t}</span>
+                                    <Text key={t} style={styles.tag}>{t}</Text>
                                 ))}
-                            </div>
-                        </div>
+                            </View>
+                        </View>
                     ))
                 )
             ) : (
                 analyses.length === 0 ? (
-                    <div className="text-center py-10 text-gray-400">No analysis history found.</div>
+                    <Text style={styles.emptyText}>No analysis history found.</Text>
                 ) : (
                      analyses.map(a => (
-                        <div key={a.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center">
-                            <div>
-                                <h3 className="font-bold text-gray-800 capitalize">{a.foodName}</h3>
-                                <p className="text-xs text-gray-400">{new Date(a.createdAt).toLocaleDateString()}</p>
-                            </div>
-                             <div className={`px-2 py-1 rounded text-xs font-bold ${a.isSafe ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                {a.isSafe ? 'Safe' : 'Unsafe'}
-                            </div>
-                        </div>
+                        <View key={a.id} style={styles.recipeCard}>
+                            <View style={styles.analysisRow}>
+                                <View>
+                                    <Text style={styles.recipeTitle}>{a.foodName}</Text>
+                                    <Text style={styles.recipeDesc}>{new Date(a.createdAt).toLocaleDateString()}</Text>
+                                </View>
+                                <Text style={[styles.status, a.isSafe ? styles.safe : styles.unsafe]}>
+                                    {a.isSafe ? 'Safe' : 'Unsafe'}
+                                </Text>
+                            </View>
+                        </View>
                     ))
                 )
             )}
-        </div>
-      </div>
+        </View>
+      </View>
     </Container>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#f9fafb',
+  },
+  content: {
+    padding: 16,
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    padding: 4,
+    backgroundColor: '#e5e7eb',
+    borderRadius: 12,
+    marginBottom: 24,
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: 8,
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  activeTab: {
+    backgroundColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#6b7280',
+  },
+  activeTabText: {
+    color: '#111827',
+  },
+  list: {
+    // space-y-4 equivalent, but in RN, use marginBottom on items
+  },
+  emptyText: {
+    textAlign: 'center',
+    paddingVertical: 40,
+    color: '#9ca3af',
+  },
+  recipeCard: {
+    backgroundColor: 'white',
+    padding: 16,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+    borderWidth: 1,
+    borderColor: '#f3f4f6',
+    marginBottom: 16,
+  },
+  recipeTitle: {
+    fontWeight: 'bold',
+    color: '#1f2937',
+  },
+  recipeDesc: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginTop: 4,
+  },
+  tags: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 8,
+  },
+  tag: {
+    fontSize: 10,
+    backgroundColor: '#ccfbf1',
+    color: '#0f766e',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  analysisRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  status: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  safe: {
+    backgroundColor: '#dcfce7',
+    color: '#166534',
+  },
+  unsafe: {
+    backgroundColor: '#fef2f2',
+    color: '#dc2626',
+  },
+});

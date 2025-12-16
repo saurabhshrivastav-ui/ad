@@ -6,6 +6,7 @@ import { RecipeCard } from '../components/RecipeCard';
 import { GeminiService } from '../services/geminiService';
 import { StorageService } from '../services/storage';
 import { UserProfile, Recipe } from '../types';
+import { Text, TouchableOpacity, TextInput, View, StyleSheet } from 'react-native';
 
 interface MealPlannerProps {
   profile: UserProfile;
@@ -35,69 +36,175 @@ export const MealPlanner: React.FC<MealPlannerProps> = ({ profile, navigation })
   };
 
   return (
-    <Container className="bg-gray-50">
+    <Container style={styles.container}>
       <Header title="Smart Meal Planner" onBack={() => navigation.goBack()} />
       
-      <div className="p-4 flex-1 overflow-y-auto">
+      <View style={styles.mainView}>
         {!generatedRecipe ? (
             <>
-                <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 mb-6">
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Meal Type</label>
-                    <div className="flex gap-2 mb-6">
+                <View style={styles.formCard}>
+                    <Text style={styles.label}>Meal Type</Text>
+                    <View style={styles.mealTypeContainer}>
                         {['Breakfast', 'Lunch', 'Dinner', 'Snack'].map(type => (
-                            <button
+                            <TouchableOpacity
                                 key={type}
-                                onClick={() => setMealType(type)}
-                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                    mealType === type 
-                                    ? 'bg-teal-600 text-white shadow-md shadow-teal-200' 
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                }`}
+                                onPress={() => setMealType(type)}
+                                style={[styles.mealTypeButton, mealType === type && styles.activeMealType]}
                             >
-                                {type}
-                            </button>
+                                <Text style={[styles.mealTypeText, mealType === type && styles.activeMealTypeText]}>{type}</Text>
+                            </TouchableOpacity>
                         ))}
-                    </div>
+                    </View>
 
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Preferences or Cravings</label>
-                    <textarea 
-                        className="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none text-sm min-h-[100px]"
+                    <Text style={styles.label}>Preferences or Cravings</Text>
+                    <TextInput 
+                        multiline
+                        style={styles.textInput}
                         placeholder="e.g. I have chicken and rice, but I want something spicy..."
                         value={preferences}
-                        onChange={(e) => setPreferences(e.target.value)}
+                        onChangeText={setPreferences}
                     />
-                </div>
+                </View>
 
                 {error && (
-                    <div className="p-4 mb-4 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100">
-                        {error}
-                    </div>
+                    <View style={styles.errorView}>
+                        <Text style={styles.errorText}>{error}</Text>
+                    </View>
                 )}
 
-                <Button onClick={handleGenerate} isLoading={isLoading}>
+                <Button onPress={handleGenerate} isLoading={isLoading}>
                     {isLoading ? "Consulting AI Dietitian..." : "Generate Meal Plan"}
                 </Button>
                 
-                <p className="text-center text-xs text-gray-400 mt-4 px-6">
+                <Text style={styles.footerText}>
                     AI considers your Stage {profile.ckdStage} restrictions ({profile.restrictions.join(', ') || 'None'}).
-                </p>
+                </Text>
             </>
         ) : (
-            <div className="animate-fade-in-up">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="font-bold text-gray-800">Your Personal Plan</h2>
-                    <button 
-                        onClick={() => setGeneratedRecipe(null)}
-                        className="text-sm text-teal-600 font-medium"
+            <View style={styles.resultView}>
+                <View style={styles.resultHeader}>
+                    <Text style={styles.resultTitle}>Your Personal Plan</Text>
+                    <TouchableOpacity 
+                        onPress={() => setGeneratedRecipe(null)}
+                        style={styles.newPlanButton}
                     >
-                        New Plan
-                    </button>
-                </div>
+                        <Text style={styles.newPlanText}>New Plan</Text>
+                    </TouchableOpacity>
+                </View>
                 <RecipeCard recipe={generatedRecipe} />
-                <div className="h-4"></div>
-            </div>
+                <View style={styles.spacer} />
+            </View>
         )}
-      </div>
+      </View>
     </Container>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#f9fafb',
+  },
+  mainView: {
+    padding: 16,
+    flex: 1,
+  },
+  formCard: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    marginBottom: 24,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  mealTypeContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 24,
+  },
+  mealTypeButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: '#f3f4f6',
+  },
+  activeMealType: {
+    backgroundColor: '#0d9488',
+    shadowColor: '#0d9488',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  mealTypeText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#4b5563',
+  },
+  activeMealTypeText: {
+    color: 'white',
+  },
+  textInput: {
+    width: '100%',
+    padding: 12,
+    backgroundColor: '#f9fafb',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    fontSize: 14,
+    minHeight: 100,
+  },
+  errorView: {
+    padding: 16,
+    marginBottom: 16,
+    backgroundColor: '#fef2f2',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#fecaca',
+  },
+  errorText: {
+    color: '#dc2626',
+    fontSize: 14,
+  },
+  footerText: {
+    textAlign: 'center',
+    fontSize: 12,
+    color: '#9ca3af',
+    marginTop: 16,
+    paddingHorizontal: 24,
+  },
+  resultView: {
+    // animate-fade-in-up, but RN doesn't have animate, so skip
+  },
+  resultHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  resultTitle: {
+    fontWeight: 'bold',
+    color: '#1f2937',
+  },
+  newPlanButton: {
+    // style for TouchableOpacity
+  },
+  newPlanText: {
+    fontSize: 14,
+    color: '#0d9488',
+    fontWeight: '500',
+  },
+  spacer: {
+    height: 16,
+  },
+});
